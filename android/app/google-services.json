@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "469755861196",
+    "project_id": "users-fabaa",
+    "storage_bucket": "users-fabaa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:469755861196:android:b319566e44c9be632b8a69",
+        "android_client_info": {
+          "package_name": "com.company.fci"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0hhf-ZVV5yh3Gt4y00aQ97sK3reJZ9NM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:469755861196:android:6e25a8e56275a30f2b8a69",
+        "android_client_info": {
+          "package_name": "com.example.demo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB0hhf-ZVV5yh3Gt4y00aQ97sK3reJZ9NM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

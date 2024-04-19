@@ -1,6 +1,10 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, unused_local_variable, unnecessary_null_comparison
 
+import 'package:demo/models/constants.dart';
+import 'package:demo/models/user.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:demo/screens/edit_profile.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -10,20 +14,36 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
   bool _isLoginSuccessful = false;
 
   Future<void> _loginUser() async {
-    // Replace this with your actual login logic (e.g., API call)
-    // Simulate successful login for this example
-    await Future.delayed(const Duration(seconds: 1));
-    if (_usernameController.text == "user" &&
-        _passwordController.text == "password") {
+    // await Future.delayed(const Duration(seconds: 1));
+    final myBox = Hive.box<User>(Constants.usersBox);
+    final User? user = myBox.get(_emailController.text);
+    if (user == null) {
+      setState(() {
+        _isLoginSuccessful = false;
+      });
+      return;
+    }
+
+    if (user.name == "") {
+      setState(() {
+        _isLoginSuccessful = false;
+      });
+      return;
+    }
+
+    if (user.password == _passwordController.text) {
       setState(() {
         _isLoginSuccessful = true;
       });
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => EditProfileScreen(user: user),
+      ));
     } else {
       setState(() {
         _isLoginSuccessful = false;
@@ -57,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () =>
                           {Navigator.pushNamed(context, '/signup')},
                       child: const Text('Signup')),
-                  SizedBox(width: 20),
+                  const SizedBox(width: 20),
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         shape: const RoundedRectangleBorder(
@@ -70,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
               TextField(
-                controller: _usernameController,
+                controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'Username',
                 ),
@@ -79,16 +99,16 @@ class _LoginPageState extends State<LoginPage> {
               TextField(
                 controller: _passwordController,
                 obscureText: true, // Hide password input
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Password',
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _loginUser,
-                child: Text('Login'),
+                child: const Text('Login'),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Text(
                 _isLoginSuccessful ? 'Login Successful' : 'Login Failed',
                 style: TextStyle(

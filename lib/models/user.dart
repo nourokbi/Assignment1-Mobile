@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 part 'user.g.dart';
@@ -6,25 +5,27 @@ part 'user.g.dart';
 @HiveType(typeId: 0)
 class User {
   @HiveField(0)
-  final String name;
+  String name;
   @HiveField(1)
-  final String email;
+  String email;
   @HiveField(2)
-  final String password;
+  String password;
   @HiveField(3)
-  final String id;
+  String studentId;
   @HiveField(4)
-  final String? imageUrl;
+  String imageUrl;
   @HiveField(5)
-  final String? gender;
-
+  String gender;
+  @HiveField(6)
+  int level;
 
   User({
     required this.name,
     required this.email,
     required this.password,
-    required this.id,
-    this.imageUrl,
-    this.gender,
+    required this.studentId,
+    this.imageUrl = '',
+    this.gender = '',
+    this.level = 0,
   });
 }

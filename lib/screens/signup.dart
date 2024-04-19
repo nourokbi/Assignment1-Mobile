@@ -1,4 +1,8 @@
+// ignore_for_file: library_private_types_in_public_api
+import 'package:demo/models/constants.dart';
+import 'package:demo/models/user.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -8,11 +12,12 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
-  TextEditingController _nameController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _studentIdController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _studentIdController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   String _gender = '';
   int _level = 0;
@@ -39,9 +44,7 @@ class _SignupPageState extends State<SignupPage> {
   }
 
   Future<void> _signupUser() async {
-    // Replace this with your actual signup logic (e.g., API call)
-    // Simulate successful signup for this example
-    await Future.delayed(Duration(seconds: 1));
+    final myBox = Hive.box<User>(Constants.usersBox);
     if (_nameController.text.isNotEmpty &&
         validateEmail(_emailController.text) == "" &&
         _studentIdController.text.isNotEmpty &&
@@ -50,6 +53,16 @@ class _SignupPageState extends State<SignupPage> {
       setState(() {
         _isSignupSuccessful = true;
       });
+      User user = User(
+        name: _nameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+        studentId: _studentIdController.text,
+        imageUrl: '',
+        gender: _gender,
+        level: _level,
+      );
+      myBox.put(_emailController.text, user);
     } else {
       setState(() {
         _isSignupSuccessful = false;
@@ -61,17 +74,16 @@ class _SignupPageState extends State<SignupPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Signup'),
+        title: const Text('Signup'),
       ),
       body: Center(
         child: Padding(
-          padding: EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0),
           child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
-                  
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     ElevatedButton(
@@ -81,7 +93,7 @@ class _SignupPageState extends State<SignupPage> {
                           ),
                         ),
                         onPressed: () => {Navigator.pushNamed(context, '/')},
-                        child: Text('Login')),
+                        child: const Text('Login')),
                     /*ElevatedButton(
                         onPressed: () =>
                             {Navigator.pushNamed(context, '/edit-profile')},
@@ -90,6 +102,7 @@ class _SignupPageState extends State<SignupPage> {
                 ),
                 TextField(
                   controller: _nameController,
+                  keyboardType: TextInputType.name,
                   decoration: InputDecoration(
                     labelText: 'Name*',
                     errorText: _nameController.text.isEmpty
@@ -97,26 +110,26 @@ class _SignupPageState extends State<SignupPage> {
                         : null,
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Row(
                   children: [
-                    Text('Gender:'),
+                    const Text('Gender:'),
                     Radio(
                       value: 'Male',
                       groupValue: _gender,
                       onChanged: (value) =>
                           setState(() => _gender = value.toString()),
                     ),
-                    Text('Male'),
+                    const Text('Male'),
                     Radio(
                       value: 'Female',
                       groupValue: _gender,
                       onChanged: (value) => setState(() => _gender = value!),
                     ),
-                    Text('Female'),
+                    const Text('Female'),
                   ],
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 5),
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -127,7 +140,7 @@ class _SignupPageState extends State<SignupPage> {
                         : validateEmail(_emailController.text),
                   ),
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 5),
                 TextField(
                   controller: _studentIdController,
                   decoration: InputDecoration(
@@ -137,10 +150,10 @@ class _SignupPageState extends State<SignupPage> {
                         : null,
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 DropdownButtonFormField<int>(
                   value: _level,
-                  hint: Text('Select Level (optional)'),
+                  hint: const Text('Select Level (optional)'),
                   items: const [
                     DropdownMenuItem(value: 0, child: Text('Select Level')),
                     DropdownMenuItem(value: 1, child: Text('Level 1')),
@@ -150,7 +163,7 @@ class _SignupPageState extends State<SignupPage> {
                   ],
                   onChanged: (value) => setState(() => _level = value!),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
@@ -161,7 +174,7 @@ class _SignupPageState extends State<SignupPage> {
                         : validatePassword(_passwordController.text),
                   ),
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 5),
                 TextField(
                   controller: _confirmPasswordController,
                   obscureText: true,
@@ -173,18 +186,18 @@ class _SignupPageState extends State<SignupPage> {
                         : null,
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: _signupUser,
-                  child: Text('Signup'),
+                  child: const Text('Signup'),
                 ),
-                SizedBox(height: 15),
+                const SizedBox(height: 15),
                 _isSignupSuccessful
-                    ? Text(
+                    ? const Text(
                         'Signup Success',
                         style: TextStyle(color: Colors.green),
                       )
-                    : Text(
+                    : const Text(
                         'Signup Failure',
                         style: TextStyle(color: Colors.red),
                       ),

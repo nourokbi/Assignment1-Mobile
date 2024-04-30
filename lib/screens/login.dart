@@ -4,7 +4,7 @@ import 'package:demo/models/constants.dart';
 import 'package:demo/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:demo/screens/edit_profile.dart';
+import 'package:demo/screens/profile.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,37 +18,28 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
 
   bool _isLoginSuccessful = false;
+  String? _errorMessage;
 
   Future<void> _loginUser() async {
-    // await Future.delayed(const Duration(seconds: 1));
     final myBox = Hive.box<User>(Constants.usersBox);
     final User? user = myBox.get(_emailController.text);
-    if (user == null) {
+    if (user == null || user.password != _passwordController.text) {
       setState(() {
         _isLoginSuccessful = false;
+        _errorMessage = "Failed to login.";
       });
       return;
     }
 
-    if (user.name == "") {
-      setState(() {
-        _isLoginSuccessful = false;
-      });
-      return;
-    }
+    setState(() {
+      _isLoginSuccessful = true;
+      _errorMessage = "Login successful. Redirecting...";
+    });
 
-    if (user.password == _passwordController.text) {
-      setState(() {
-        _isLoginSuccessful = true;
-      });
-      Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) => EditProfileScreen(user: user),
-      ));
-    } else {
-      setState(() {
-        _isLoginSuccessful = false;
-      });
-    }
+    await Future.delayed(const Duration(seconds: 1));
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (context) => ProfileScreen(user: user),
+    ));
   }
 
   @override
@@ -77,16 +68,6 @@ class _LoginPageState extends State<LoginPage> {
                       onPressed: () =>
                           {Navigator.pushNamed(context, '/signup')},
                       child: const Text('Signup')),
-                  const SizedBox(width: 20),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(3)),
-                        ),
-                      ),
-                      onPressed: () =>
-                          {Navigator.pushNamed(context, '/edit-profile')},
-                      child: const Text('Edit Profile')),
                 ],
               ),
               TextField(
@@ -110,7 +91,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 10),
               Text(
-                _isLoginSuccessful ? 'Login Successful' : 'Login Failed',
+                _errorMessage ?? '',
                 style: TextStyle(
                     color: _isLoginSuccessful ? Colors.green : Colors.red),
               ),

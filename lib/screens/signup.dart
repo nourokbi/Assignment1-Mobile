@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 import 'package:demo/models/constants.dart';
 import 'package:demo/models/user.dart';
+import 'package:demo/screens/login.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 
@@ -21,6 +22,13 @@ class _SignupPageState extends State<SignupPage> {
 
   String _gender = '';
   int _level = 0;
+
+  String? _nameError;
+  String? _studentIdError;
+  String? _emailError;
+  String? _passwordError;
+  String? _confirmPasswordError;
+  String? _signupError;
 
   bool _isSignupSuccessful = false;
 
@@ -45,14 +53,65 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> _signupUser() async {
     final myBox = Hive.box<User>(Constants.usersBox);
-    if (_nameController.text.isNotEmpty &&
-        validateEmail(_emailController.text) == "" &&
-        _studentIdController.text.isNotEmpty &&
-        validatePassword(_passwordController.text) == "" &&
-        _passwordController.text == _confirmPasswordController.text) {
+    if (_nameController.text.isEmpty) {
+      setState(() {
+        _nameError = 'Name is required';
+      });
+    } else {
+      setState(() {
+        _nameError = null;
+      });
+    }
+
+    if (_studentIdController.text.isEmpty) {
+      setState(() {
+        _studentIdError = 'Student ID is required';
+      });
+    } else {
+      setState(() {
+        _studentIdError = null;
+      });
+    }
+
+    if (validateEmail(_emailController.text) != "") {
+      setState(() {
+        _emailError = validateEmail(_emailController.text);
+      });
+    } else {
+      setState(() {
+        _emailError = null;
+      });
+    }
+
+    if (validatePassword(_passwordController.text) != "") {
+      setState(() {
+        _passwordError = validatePassword(_passwordController.text);
+      });
+    } else {
+      setState(() {
+        _passwordError = null;
+      });
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      setState(() {
+        _confirmPasswordError = 'Passwords do not match';
+      });
+    } else {
+      setState(() {
+        _confirmPasswordError = null;
+      });
+    }
+    if (_nameError == null &&
+        _studentIdError == null &&
+        _emailError == null &&
+        _passwordError == null &&
+        _confirmPasswordError == null) {
       setState(() {
         _isSignupSuccessful = true;
+        _signupError = "Signup successful. Redirecting...";
       });
+
       User user = User(
         name: _nameController.text,
         email: _emailController.text,
@@ -63,9 +122,14 @@ class _SignupPageState extends State<SignupPage> {
         level: _level,
       );
       myBox.put(_emailController.text, user);
+      await Future.delayed(const Duration(seconds: 1));
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => const LoginPage(),
+      ));
     } else {
       setState(() {
         _isSignupSuccessful = false;
+        _signupError = "Failed to signup.";
       });
     }
   }
@@ -94,10 +158,6 @@ class _SignupPageState extends State<SignupPage> {
                         ),
                         onPressed: () => {Navigator.pushNamed(context, '/')},
                         child: const Text('Login')),
-                    /*ElevatedButton(
-                        onPressed: () =>
-                            {Navigator.pushNamed(context, '/edit-profile')},
-                        child: Text('Edit Profile')),*/
                   ],
                 ),
                 TextField(
@@ -105,12 +165,45 @@ class _SignupPageState extends State<SignupPage> {
                   keyboardType: TextInputType.name,
                   decoration: InputDecoration(
                     labelText: 'Name*',
-                    errorText: _nameController.text.isEmpty
-                        ? 'Name is required'
-                        : null,
+                    errorText: _nameError,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
+                TextField(
+                  controller: _studentIdController,
+                  decoration: InputDecoration(
+                    labelText: 'Student ID*',
+                    errorText: _studentIdError,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    labelText: 'Email (FCI structure)*',
+                    errorText: _emailError,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password (at least 8 characters)*',
+                    errorText: _passwordError,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                TextField(
+                  controller: _confirmPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    errorText: _confirmPasswordError,
+                  ),
+                ),
+                const SizedBox(height: 5),
                 Row(
                   children: [
                     const Text('Gender:'),
@@ -130,27 +223,6 @@ class _SignupPageState extends State<SignupPage> {
                   ],
                 ),
                 const SizedBox(height: 5),
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Email (FCI structure)*',
-                    errorText: validateEmail(_emailController.text) == ""
-                        ? null
-                        : validateEmail(_emailController.text),
-                  ),
-                ),
-                const SizedBox(height: 5),
-                TextField(
-                  controller: _studentIdController,
-                  decoration: InputDecoration(
-                    labelText: 'Student ID*',
-                    errorText: _studentIdController.text.isEmpty
-                        ? 'Student ID is required'
-                        : null,
-                  ),
-                ),
-                const SizedBox(height: 10),
                 DropdownButtonFormField<int>(
                   value: _level,
                   hint: const Text('Select Level (optional)'),
@@ -164,43 +236,16 @@ class _SignupPageState extends State<SignupPage> {
                   onChanged: (value) => setState(() => _level = value!),
                 ),
                 const SizedBox(height: 10),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Password (at least 8 characters)*',
-                    errorText: validatePassword(_passwordController.text) == ''
-                        ? null
-                        : validatePassword(_passwordController.text),
-                  ),
-                ),
-                const SizedBox(height: 5),
-                TextField(
-                  controller: _confirmPasswordController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    labelText: 'Confirm Password',
-                    errorText: _passwordController.text !=
-                            _confirmPasswordController.text
-                        ? 'Passwords do not match'
-                        : null,
-                  ),
-                ),
-                const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: _signupUser,
                   child: const Text('Signup'),
                 ),
                 const SizedBox(height: 15),
-                _isSignupSuccessful
-                    ? const Text(
-                        'Signup Success',
-                        style: TextStyle(color: Colors.green),
-                      )
-                    : const Text(
-                        'Signup Failure',
-                        style: TextStyle(color: Colors.red),
-                      ),
+                Text(
+                  _signupError ?? "",
+                  style: TextStyle(
+                      color: _isSignupSuccessful ? Colors.green : Colors.red),
+                ),
               ],
             ),
           ),

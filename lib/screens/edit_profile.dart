@@ -1,17 +1,17 @@
-// ignore_for_file: library_private_types_in_public_api, unnecessary_null_comparison, prefer_interpolation_to_compose_strings, prefer_const_constructors
-
-import 'package:demo/models/constants.dart';
-import 'package:demo/models/user.dart';
-import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'dart:io';
+import 'package:demo/models/user.dart';
+import 'package:demo/screens/profile.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:hive/hive.dart';
+// import 'package:path_provider/path_provider.dart' as path_provider;
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({
     Key? key,
     required this.user,
   }) : super(key: key);
+
   final User user;
 
   @override
@@ -19,34 +19,19 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  late File _imageFile; // To store the selected image file
+  late TextEditingController _nameController;
+  late TextEditingController _oldPasswordController;
+  late TextEditingController _passwordController;
+  late File _imageFile;
   final picker = ImagePicker();
   bool _load = false;
-  final myBox = Hive.box<User>(Constants.usersBox);
-  late User? user = myBox.get(widget.user.email);
 
+  @override
   void initState() {
     super.initState();
-    _loadImage();
-  }
-
-  Future<void> _getImage(ImageSource source) async {
-    final pickedFile = await picker.pickImage(source: source);
-    setState(() {
-      if (pickedFile != null) {
-        _imageFile = File(pickedFile.path);
-        widget.user.imageUrl = pickedFile.path;
-        _load = true;
-        _saveChanges();
-      }
-    });
-  }
-
-  Future<void> _saveChanges() async {
-    await myBox.put(widget.user.email, widget.user);
-  }
-
-  void _loadImage() {
+    _nameController = TextEditingController(text: widget.user.name);
+    _oldPasswordController = TextEditingController();
+    _passwordController = TextEditingController();
     if (widget.user.imageUrl != '') {
       _imageFile = File(widget.user.imageUrl);
       _load = true;
@@ -54,71 +39,117 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _getImage(ImageSource source) async {
+    final pickedFile = await picker.pickImage(source: source);
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+        _load = true;
+      });
+    }
+  }
+
+  bool _validatePassword() {
+    if (_oldPasswordController.text != widget.user.password &&
+        _passwordController.text.isNotEmpty) {
+      return false;
+    }
+    if (_passwordController.text.isEmpty) {
+      return true;
+    }
+    if (_passwordController.text.length < 8) {
+      return false;
+    }
+    widget.user.password = _passwordController.text;
+    return true;
+  }
+
+  Future<void> _saveChanges() async {
+    final userBox = await Hive.openBox<User>('userBox');
+    final newUser = User(
+      name: _nameController.text,
+      email: widget.user.email,
+      password: _validatePassword() ? _passwordController.text : widget.user.password,
+      studentId: widget.user.studentId,
+      imageUrl: _imageFile.path,
+    );
+    await userBox.put(widget.user.email, newUser);
+    await Future.delayed(const Duration(seconds: 1));
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => ProfileScreen(user: newUser)));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile'),
+        title: const Text('Edit Profile'),
       ),
-      body: Center(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Profile picture section
-            Stack(
-              children: [
-                CircleAvatar(
-                  radius: 75,
-                  backgroundImage: _load == true
-                      ? FileImage(File(widget.user.imageUrl))
-                      : null,
-                ),
-              ],
+            CircleAvatar(
+              radius: 64,
+              backgroundImage:
+                  _load ? FileImage(File(widget.user.imageUrl)) : null,
+            ),
+            const SizedBox(
+              height: 10,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: Icon(Icons.camera_alt_outlined),
+                  icon: const Icon(Icons.camera_alt_outlined),
                   onPressed: () => _getImage(ImageSource.camera),
                 ),
                 IconButton(
-                  icon: Icon(Icons.photo_library_outlined),
+                  icon: const Icon(Icons.photo_library_outlined),
                   onPressed: () => _getImage(ImageSource.gallery),
                 ),
               ],
             ),
-            // User information section
-            SizedBox(height: 20),
-            Text(
-              "Name: " + widget.user.name,
-              style: TextStyle(fontSize: 18),
+            // GestureDetector(
+            //   onTap: () => _getImage(ImageSource.gallery),
+            //   child: CircleAvatar(
+            //     radius: 64,
+            //     backgroundImage: FileImage(_imageFile),
+            //   ),
+            // ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
             ),
-            SizedBox(height: 10),
-            Text(
-              "Email: " + widget.user.email,
-              style: TextStyle(fontSize: 16),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _oldPasswordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Old Password'),
             ),
-            SizedBox(height: 10),
-            Text(
-              'ID: ' + widget.user.studentId,
-              style: TextStyle(fontSize: 16),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'New Password'),
             ),
-            SizedBox(height: 10),
-            Text(
-              'Gender: ' +
-                  (widget.user.gender == ""
-                      ? "Not specified"
-                      : widget.user.gender),
-              style: TextStyle(fontSize: 16),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: _saveChanges,
+              child: const Text('Save'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10,),
             Text(
-              "Level: " +
-                  (widget.user.level.toString() == '0'
-                      ? "Not specified"
-                      : "${widget.user.level}"), // Replace with actual level
-              style: TextStyle(fontSize: 16),
-            ),
+              _validatePassword() ? 'Applying Changes' : 'Password is not changing',
+              style: TextStyle(color: _validatePassword() ? Colors.green : Colors.red),
+            )
           ],
         ),
       ),

@@ -1,7 +1,9 @@
 // ignore_for_file: library_private_types_in_public_api, unused_local_variable, unnecessary_null_comparison
 
 import 'package:demo/models/constants.dart';
+import 'package:demo/models/service_auth.dart';
 import 'package:demo/models/user.dart';
+import 'package:demo/models/userdata.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:demo/screens/profile.dart';
@@ -23,6 +25,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _loginUser() async {
     final myBox = Hive.box<User>(Constants.usersBox);
     final User? user = myBox.get(_emailController.text);
+    late UserData sameUser;
     if (user == null || user.password != _passwordController.text) {
       setState(() {
         _isLoginSuccessful = false;
@@ -30,6 +33,9 @@ class _LoginPageState extends State<LoginPage> {
       });
       return;
     }
+
+    AuthService().signInWithEmailAndPassword(
+        email: _emailController.text, password: _passwordController.text);
 
     setState(() {
       _isLoginSuccessful = true;
@@ -74,6 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                 controller: _emailController,
                 decoration: const InputDecoration(
                   labelText: 'Username',
+                  prefixIcon: Icon(Icons.person),
                 ),
               ),
               const SizedBox(height: 10),
@@ -82,6 +89,7 @@ class _LoginPageState extends State<LoginPage> {
                 obscureText: true, // Hide password input
                 decoration: const InputDecoration(
                   labelText: 'Password',
+                  prefixIcon: Icon(Icons.lock),
                 ),
               ),
               const SizedBox(height: 20),

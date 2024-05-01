@@ -1,5 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api
 import 'package:demo/models/constants.dart';
+import 'package:demo/models/service_auth.dart';
 import 'package:demo/models/user.dart';
 import 'package:demo/screens/login.dart';
 import 'package:flutter/material.dart';
@@ -122,6 +123,15 @@ class _SignupPageState extends State<SignupPage> {
         level: _level,
       );
       myBox.put(_emailController.text, user);
+      AuthService().signUpWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+        name: _nameController.text,
+        studentId: _studentIdController.text,
+        // imageUrl: "",
+        gender: _gender,
+        level: _level.toString(),
+      );
       await Future.delayed(const Duration(seconds: 1));
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => const LoginPage(),
@@ -165,6 +175,7 @@ class _SignupPageState extends State<SignupPage> {
                   keyboardType: TextInputType.name,
                   decoration: InputDecoration(
                     labelText: 'Name*',
+                    prefixIcon: const Icon(Icons.person),
                     errorText: _nameError,
                   ),
                 ),
@@ -173,6 +184,7 @@ class _SignupPageState extends State<SignupPage> {
                   controller: _studentIdController,
                   decoration: InputDecoration(
                     labelText: 'Student ID*',
+                    prefixIcon: const Icon(Icons.school),
                     errorText: _studentIdError,
                   ),
                 ),
@@ -182,6 +194,7 @@ class _SignupPageState extends State<SignupPage> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: 'Email (FCI structure)*',
+                    prefixIcon: const Icon(Icons.email),
                     errorText: _emailError,
                   ),
                 ),
@@ -191,6 +204,7 @@ class _SignupPageState extends State<SignupPage> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Password (at least 8 characters)*',
+                    prefixIcon: const Icon(Icons.lock),
                     errorText: _passwordError,
                   ),
                 ),
@@ -200,13 +214,19 @@ class _SignupPageState extends State<SignupPage> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Confirm Password',
+                    prefixIcon: const Icon(Icons.lock),
                     errorText: _confirmPasswordError,
                   ),
                 ),
                 const SizedBox(height: 5),
                 Row(
                   children: [
-                    const Text('Gender:'),
+                    const SizedBox(width: 10),
+                    const Icon(Icons.question_mark),
+                    const SizedBox(width: 10),
+                    const Text('Gender:',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
                     Radio(
                       value: 'Male',
                       groupValue: _gender,
@@ -227,7 +247,16 @@ class _SignupPageState extends State<SignupPage> {
                   value: _level,
                   hint: const Text('Select Level (optional)'),
                   items: const [
-                    DropdownMenuItem(value: 0, child: Text('Select Level')),
+                    DropdownMenuItem(
+                        value: 0,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 10),
+                            Icon(Icons.auto_stories),
+                            SizedBox(width: 10),
+                            Text('Select Level')
+                          ],
+                        )),
                     DropdownMenuItem(value: 1, child: Text('Level 1')),
                     DropdownMenuItem(value: 2, child: Text('Level 2')),
                     DropdownMenuItem(value: 3, child: Text('Level 3')),

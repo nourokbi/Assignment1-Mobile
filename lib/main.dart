@@ -3,7 +3,6 @@
 import 'package:demo/firebase_options.dart';
 import 'package:demo/models/constants.dart';
 import 'package:demo/models/user.dart';
-import 'package:demo/screens/edit_profile.dart';
 import 'package:demo/screens/profile.dart';
 import 'package:demo/screens/login.dart';
 import 'package:demo/screens/signup.dart';

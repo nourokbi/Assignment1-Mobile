@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CollectionReference _usersCollection =
+      FirebaseFirestore.instance.collection('users');
 
   Future<void> signUpWithEmailAndPassword({
     required String email,
@@ -16,7 +18,8 @@ class AuthService {
   }) async {
     try {
       // Create user with email and password
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -27,13 +30,17 @@ class AuthService {
         name: name,
         email: email,
         studentId: studentId,
-        password: password, // Note: Storing password in Firestore might not be advisable in a real-world app
+        password: password,
         level: level,
         gender: gender,
       );
 
       // Add user data to Firestore
-      await _firestore.collection('users').doc(user.id).set(user.toMap());
+      // await _usersCollection.doc(userCredential.user!.uid).set(user.toMap());
+      _usersCollection
+          .add(user.toMap())
+          .then((value) => print("User Added"))
+          .catchError((error) => print("Failed to add user: $error"));
     } catch (e) {
       print('Error signing up: $e');
       throw e; // Rethrow the exception to handle it in the UI
